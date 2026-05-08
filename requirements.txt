@@ -1,0 +1,41 @@
+# ── Web / API ──────────────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+pydantic==2.7.1
+pydantic-settings==2.2.1
+
+# ── UI ─────────────────────────────────────────────────────────────────────────
+gradio==4.31.5
+
+# ── RunPod cloud GPU ───────────────────────────────────────────────────────────
+runpod==1.6.2
+
+# ── Local A/V capture & processing ────────────────────────────────────────────
+opencv-python-headless==4.9.0.80
+ffmpeg-python==0.2.0
+sounddevice==0.4.6
+soundfile==0.12.1
+numpy==1.26.4
+
+# ── Remote inference (installed on GPU pod, included here for parity) ──────────
+torch==2.3.0
+torchaudio==2.3.0
+torchvision==0.18.0
+# RVC voice conversion
+fairseq==0.12.2
+faiss-cpu==1.8.0          # swap for faiss-gpu on pod
+praat-parselmouth==0.4.3
+pyworld==0.3.4
+# Motion / pose transfer
+mediapipe==0.10.14
+Pillow==10.3.0
+imageio==2.34.1
+imageio-ffmpeg==0.5.1
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+httpx==0.27.0
+boto3==1.34.101           # optional: S3 staging for large file transfers
+python-dotenv==1.0.1
+loguru==0.7.2
+tqdm==4.66.4
