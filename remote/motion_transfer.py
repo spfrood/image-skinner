@@ -129,6 +129,9 @@ def run_liveportrait(
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
+    # Snapshot existing mp4s so we can identify the new file LivePortrait produces
+    existing_mp4s = set(out_path.glob("*.mp4"))
+
     result = subprocess.run(
         [
             sys.executable, str(LIVEPORTRAIT_ROOT / "inference.py"),
@@ -147,14 +150,14 @@ def run_liveportrait(
         logger.error(result.stderr[-2000:])
         raise RuntimeError(f"LivePortrait failed (exit {result.returncode})")
 
-    candidates = sorted(out_path.glob("*.mp4"))
-    if not candidates:
+    new_mp4s = set(out_path.glob("*.mp4")) - existing_mp4s
+    if not new_mp4s:
         raise FileNotFoundError(
-            f"LivePortrait produced no .mp4 in {out_path}. "
+            f"LivePortrait produced no new .mp4 in {out_path}. "
             f"stderr: {result.stderr[-1000:]}"
         )
     final = out_path / f"{output_stem}_lp.mp4"
-    candidates[-1].rename(final)
+    next(iter(new_mp4s)).rename(final)
     logger.success(f"LivePortrait output: {final}")
     return final
 
