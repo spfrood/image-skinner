@@ -34,6 +34,8 @@ xformers>=0.0.26           # memory-efficient attention for RTX 4090
 transformers>=4.41.0
 
 # RVC voice conversion
+# fairseq requires --no-build-isolation on the pod; pod_setup.sh handles this.
+# Install locally with: pip install fairseq==0.12.2 --no-build-isolation
 fairseq==0.12.2
 faiss-cpu==1.8.0          # swap for faiss-gpu on pod
 praat-parselmouth==0.4.3

@@ -118,19 +118,24 @@ def _run_chunk(
 ) -> list[np.ndarray]:
     """Run one AnimateDiff window and return frames as uint8 RGB numpy arrays."""
     generator = torch.Generator("cuda").manual_seed(seed)
+    # AnimateDiffControlNetPipeline uses `image` for the per-frame ControlNet
+    # conditioning input (not `conditioning_frames`).
+    # output.frames is List[List[PIL.Image]] — outer=batch, inner=frames.
     output = pipe(
         prompt=prompt,
         negative_prompt=negative_prompt,
         ip_adapter_image=reference_image,
-        conditioning_frames=conditioning_frames,
+        image=conditioning_frames,           # ControlNet conditioning frames
         num_frames=len(conditioning_frames),
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance_scale,
+        conditioning_scale=0.8,              # ControlNet influence weight
         generator=generator,
         width=INFER_SIZE,
         height=INFER_SIZE,
-    ).frames[0]
-    return [np.array(f) for f in output]
+    )
+    frames = output.frames[0]  # first (and only) batch item
+    return [np.array(f) for f in frames]
 
 
 def _crossfade(a: np.ndarray, b: np.ndarray, n: int, i: int) -> np.ndarray:
