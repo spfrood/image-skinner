@@ -46,6 +46,7 @@ def get_character(character_id: str):
 async def create_character(
     name: str = Form(...),
     notes: Optional[str] = Form(None),
+    animation_prompt: Optional[str] = Form(None),
     sketch: UploadFile = File(...),
     voice_model: UploadFile = File(...),
     voice_index: UploadFile = File(...),
@@ -73,6 +74,7 @@ async def create_character(
             voice_index_src=saved["voice_index"],
             voice_sample_src=saved["voice_sample"],
             notes=notes,
+            animation_prompt=animation_prompt,
         )
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

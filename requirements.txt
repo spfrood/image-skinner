@@ -27,6 +27,12 @@ huggingface_hub>=0.23.0
 onnxruntime-gpu==1.17.1    # LivePortrait face detector
 tyro>=0.7.2                # LivePortrait CLI arg parsing
 
+# AnimateDiff + ControlNet + IP-Adapter diffusion stack (GPU pod)
+diffusers>=0.28.0
+accelerate>=0.30.0
+xformers>=0.0.26           # memory-efficient attention for RTX 4090
+transformers>=4.41.0
+
 # RVC voice conversion
 fairseq==0.12.2
 faiss-cpu==1.8.0          # swap for faiss-gpu on pod

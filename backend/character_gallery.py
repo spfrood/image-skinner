@@ -37,6 +37,7 @@ class CharacterGallery:
         voice_index_src: Path,
         voice_sample_src: Path,
         notes: Optional[str] = None,
+        animation_prompt: Optional[str] = None,
     ) -> CharacterProfile:
         profile = CharacterProfile(
             name=name,
@@ -45,6 +46,7 @@ class CharacterGallery:
             voice_index_filename=voice_index_src.name,
             voice_sample_filename=voice_sample_src.name,
             notes=notes,
+            **({"animation_prompt": animation_prompt} if animation_prompt else {}),
         )
         dest = self._profile_dir(profile.id)
         dest.mkdir(parents=True, exist_ok=True)

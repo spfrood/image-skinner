@@ -65,6 +65,10 @@ def process(config: dict) -> None:
         driver_video=str(recording),
         reference_image=str(sketch),
         output_video=str(tmp_video),
+        character_prompt=config.get(
+            "character_prompt",
+            "a stylized animated character, full body, anime art style",
+        ),
     )
 
     # ── Step 4: Mux converted audio onto animated video ───────────────────────

@@ -12,6 +12,7 @@ class CharacterProfile(BaseModel):
     voice_model_filename: str      # .pth RVC model
     voice_index_filename: str      # .index faiss file
     voice_sample_filename: str     # original WAV sample for reference
+    animation_prompt: str = "a stylized animated character, full body, anime art style"
     created_at: datetime = Field(default_factory=datetime.utcnow)
     thumbnail_filename: Optional[str] = None
     notes: Optional[str] = None
