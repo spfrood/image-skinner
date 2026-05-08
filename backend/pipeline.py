@@ -119,11 +119,14 @@ class RenderPipeline:
         The worker is already running via docker_args; we send it a trigger
         file so it can process without an open SSH channel.
         """
+        profile = self._gallery.get(payload.character_id)
+        safe_prompt = profile.animation_prompt.replace("'", "\\'")
         trigger_json = (
             f'{{"recording": "recording.mp4", '
             f'"sketch": "sketch.png", '
             f'"voice_model": "voice_model.pth", '
             f'"voice_index": "voice_index.index", '
+            f'"character_prompt": "{safe_prompt}", '
             f'"output": "/workspace/output/{payload.output_filename}"}}'
         )
         gpu._exec_on_pod(

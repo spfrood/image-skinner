@@ -74,7 +74,7 @@ def build_record_tab() -> gr.Tab:
 
 # ── Tab 2: Character Gallery ───────────────────────────────────────────────────
 
-def create_character(name, notes, sketch, voice_model, voice_index, voice_sample):
+def create_character(name, notes, animation_prompt, sketch, voice_model, voice_index, voice_sample):
     missing = [
         label
         for label, val in [
@@ -97,7 +97,11 @@ def create_character(name, notes, sketch, voice_model, voice_index, voice_sample
     ):
         resp = client.post(
             "/characters",
-            data={"name": name, "notes": notes or ""},
+            data={
+                "name": name,
+                "notes": notes or "",
+                "animation_prompt": animation_prompt or "",
+            },
             files={
                 "sketch":       (Path(sketch).name,       sk, "image/png"),
                 "voice_model":  (Path(voice_model).name,  vm, "application/octet-stream"),
@@ -148,6 +152,11 @@ def build_gallery_tab() -> gr.Tab:
                 gr.Markdown("### Add New Character")
                 char_name = gr.Textbox(label="Character Name")
                 char_notes = gr.Textbox(label="Notes (optional)")
+                char_prompt = gr.Textbox(
+                    label="Animation Prompt",
+                    placeholder="a stylized animated character, full body, anime art style",
+                    info="Describes the visual style fed to AnimateDiff. Be specific about art style, clothing, colours.",
+                )
                 sketch_file = gr.File(label="Character Sketch (.png)", file_types=[".png"])
                 voice_model_file = gr.File(label="RVC Voice Model (.pth)", file_types=[".pth"])
                 voice_index_file = gr.File(label="RVC Index File (.index)", file_types=[".index"])
@@ -157,8 +166,8 @@ def build_gallery_tab() -> gr.Tab:
 
         create_btn.click(
             create_character,
-            inputs=[char_name, char_notes, sketch_file, voice_model_file,
-                    voice_index_file, voice_sample_file],
+            inputs=[char_name, char_notes, char_prompt, sketch_file,
+                    voice_model_file, voice_index_file, voice_sample_file],
             outputs=[create_status, sketch_file, gallery_table],
         )
         refresh_btn.click(refresh_gallery, outputs=gallery_table)

@@ -17,7 +17,7 @@ from pathlib import Path
 from loguru import logger
 
 from rvc_inference import run_rvc
-from motion_transfer import run_motion_transfer
+from motion_transfer import run_motion_transfer, wait_for_liveportrait
 
 WORKSPACE = Path("/workspace")
 TRIGGER_FILE = WORKSPACE / "trigger.json"
@@ -65,6 +65,10 @@ def process(config: dict) -> None:
         driver_video=str(recording),
         reference_image=str(sketch),
         output_video=str(tmp_video),
+        character_prompt=config.get(
+            "character_prompt",
+            "a stylized animated character, full body, anime art style",
+        ),
     )
 
     # ── Step 4: Mux converted audio onto animated video ───────────────────────
@@ -86,6 +90,9 @@ def process(config: dict) -> None:
 
 
 def watch_loop() -> None:
+    # Block here until pod_setup.sh finishes installing LivePortrait + models.
+    # This happens in the background while job assets are being uploaded.
+    wait_for_liveportrait()
     logger.info("Worker ready. Watching for trigger.json…")
     while True:
         if TRIGGER_FILE.exists():
