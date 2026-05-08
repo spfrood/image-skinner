@@ -71,10 +71,14 @@ class GPUManager:
                 "PYTHONUNBUFFERED": "1",
                 "HF_HOME": "/workspace/hf_cache",
             },
-            # Run the remote worker on startup
+            # Bootstrap: install LivePortrait, download models, then start worker.
+            # pod_setup.sh is uploaded by sync_assets_to_pod before worker.py
+            # appears, which is the handoff signal the script waits for.
             docker_args=(
-                "bash -c 'pip install -q runpod loguru && "
-                "python /workspace/worker.py'"
+                "bash -c '"
+                "while [ ! -f /workspace/pod_setup.sh ]; do sleep 2; done && "
+                "bash /workspace/pod_setup.sh"
+                "'"
             ),
         )
 
@@ -126,29 +130,53 @@ class GPUManager:
     # ── File transfer ──────────────────────────────────────────────────────────
 
     def sync_assets_to_pod(self, job: JobPayload, handle: PodHandle) -> None:
-        """Bundle character assets + recording and upload via RunPod file API."""
+        """
+        Upload two archives to the pod:
+          1. remote_scripts.tar.gz – pod_setup.sh + Python worker scripts.
+             pod_setup.sh lands first so docker_args' bootstrap loop exits.
+             worker.py lands last, which signals pod_setup.sh to start the worker.
+          2. job_assets.tar.gz – recording, sketch, voice model + index.
+        """
         logger.info("Syncing assets to pod…")
-        with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
-            archive_path = tmp.name
+        remote_dir = Path(__file__).resolve().parent.parent / "remote"
 
-        with tarfile.open(archive_path, "w:gz") as tar:
+        # ── Phase 1: worker scripts ────────────────────────────────────────────
+        with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+            scripts_archive = tmp.name
+        with tarfile.open(scripts_archive, "w:gz") as tar:
+            # pod_setup.sh goes in first; worker.py last (it is the start signal)
+            for filename in ["pod_setup.sh", "rvc_inference.py",
+                             "motion_transfer.py", "worker.py"]:
+                src = remote_dir / filename
+                if src.exists():
+                    tar.add(src, arcname=filename)
+        self._upload_file_to_pod(handle, scripts_archive, "/workspace/scripts.tar.gz")
+        os.unlink(scripts_archive)
+        self._exec_on_pod(
+            handle,
+            "tar -xzf /workspace/scripts.tar.gz -C /workspace/ && "
+            "chmod +x /workspace/pod_setup.sh",
+        )
+        logger.info("Worker scripts uploaded.")
+
+        # ── Phase 2: job assets ────────────────────────────────────────────────
+        with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+            assets_archive = tmp.name
+        with tarfile.open(assets_archive, "w:gz") as tar:
             for label, local_path in [
-                ("recording.mp4",   job.recording_path),
-                ("sketch.png",      job.sketch_path),
-                ("voice_model.pth", job.voice_model_path),
+                ("recording.mp4",     job.recording_path),
+                ("sketch.png",        job.sketch_path),
+                ("voice_model.pth",   job.voice_model_path),
                 ("voice_index.index", job.voice_index_path),
             ]:
                 tar.add(local_path, arcname=label)
-
-        self._upload_file_to_pod(handle, archive_path, "/workspace/input.tar.gz")
-        os.unlink(archive_path)
-
-        # Extract on the pod via RunPod exec API
+        self._upload_file_to_pod(handle, assets_archive, "/workspace/input.tar.gz")
+        os.unlink(assets_archive)
         self._exec_on_pod(
             handle,
             "tar -xzf /workspace/input.tar.gz -C /workspace/",
         )
-        logger.success("Assets synced.")
+        logger.success("All assets synced to pod.")
 
     def fetch_output_from_pod(self, handle: PodHandle, output_filename: str) -> Path:
         """Download the rendered video from the pod to the local outputs dir."""

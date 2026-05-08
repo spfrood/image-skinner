@@ -22,6 +22,11 @@ numpy==1.26.4
 torch==2.3.0
 torchaudio==2.3.0
 torchvision==0.18.0
+# LivePortrait (installed from cloned repo on GPU pod; listed here for parity)
+huggingface_hub>=0.23.0
+onnxruntime-gpu==1.17.1    # LivePortrait face detector
+tyro>=0.7.2                # LivePortrait CLI arg parsing
+
 # RVC voice conversion
 fairseq==0.12.2
 faiss-cpu==1.8.0          # swap for faiss-gpu on pod
