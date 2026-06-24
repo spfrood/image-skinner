@@ -41,7 +41,7 @@ Step 4 — Clone the repository
 
 Open a terminal, navigate to wherever you want the project to live, and run:
 
-git clone https://github.com/spfrood/solo_teamer.git
+git clone https://github.com/spfrood/image-skinner.git
 cd solo_teamer
 Step 5 — Create your environment file
 
