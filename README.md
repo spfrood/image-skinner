@@ -1,4 +1,4 @@
-# solo_teamer
+# image-skinner (formerly solo-teamer)
 Solo creative toolset to generate character video by mapping a humans facial movement, body movement, and speech to animate a character based on AI generated sketches and AI generated voice samples. 
 
 Project notes and description:
